@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Line Chart with Chart.js</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+</head>
+<body>
+  
+  <canvas id="myChart"></canvas>
+  <input type="file" id="fileInput">
+  <script>
+
+
+function readCSV(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const lines = reader.result.split('\n');
+          const headers = lines[0].split(',').map(header => header.trim()); 
+          const data = lines.slice(1).map(line => line.split(',').map(value => value.trim())); 
+          console.log('Headers:', headers);
+          console.log('Data:', data);
+          resolve({ headers, data });
+        };
+        reader.onerror = reject;
+        reader.readAsText(file);
+      });
+    }
+   
+
+    var ctx = document.getElementById('myChart').getContext('2d');
+
+    var fileInput = document.getElementById('fileInput');
+    fileInput.addEventListener('change', function(event) {
+    var file = event.target.files[0];
+    readCSV(file)
+      .then(({ headers, data }) => {
+        
+        const timeIndex = headers.indexOf('Time (s)');
+        const ldXIndex = headers.indexOf('LD-X (mm)');
+
+        var waveformData = data.map(entry => ({
+            x: parseFloat(entry[timeIndex]),
+            y: parseFloat(entry[ldXIndex])
+          }));
+
+
+  
+    
+    var myChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        
+       
+        datasets: [{
+          label: 'Scope',
+          data: waveformData,
+          backgroundColor: 'rgba(72, 176, 131, 1)',
+          borderColor: 'rgba(72, 176, 131, 1)',
+          borderWidth: 0.3,
+          tension: 0.4,
+          pointRadius:0
+        }]
+      },
+      options: {
+        scales: {
+          x: {
+           
+            title: {
+              display: true,
+              text: 'Time (ms)'
+            },
+            type: 'linear',
+            ticks: {
+                display:true
+            },
+            min: 0, 
+            max: 100,
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'LD-X (mm)'
+            },
+             min: -5,
+             max: 5,
+             display: true,
+            ticks: {
+               stepSize: 1,
+            callback: function(value, index, values) {
+                if (value === -1 || value === -3 || value === 1 || value === 3) {
+                   return ''; 
+                 }
+                 return value;
+               }
+             }
+          }
+          },
+        plugins: {
+          annotation: {
+            annotations: [
+               {
+                type: 'line',
+                xMin: 0,
+                xMax: 0,
+                borderColor: 'black',
+                borderWidth: 2,
+              },
+              {
+                type: 'line',
+                yMin: -5,
+                yMax: -5,
+                borderColor: 'black',
+                borderWidth: 2,
+              },
+              {
+                type: 'line',
+                xMin: 10,
+                xMax: 10,
+                borderColor: 'black',
+                borderWidth: 1
+              
+              },
+              
+              {
+                type: 'line',
+                xMin: 30,
+                xMax: 30,
+                borderColor: 'black',
+                borderWidth: 1
+              
+              },
+              {
+                type: 'line',
+                xMin: 50,
+                xMax: 50,
+                borderColor: 'black',
+                borderWidth: 1
+              
+              },
+              {
+                type: 'line',
+                xMin: 70,
+                xMax: 70,
+                borderColor: 'black',
+                borderWidth: 1,
+              },
+              {
+                type: 'line',
+                xMin: 90,
+                xMax: 90,
+                borderColor: 'black',
+                borderWidth: 1
+              
+              }
+              
+            ]
+          }
+        }
+      }
+    });
+  })
+    .catch(error => {
+        console.error('Error loading CSV file:', error);
+      });
+    });
+  </script>
+</body>
+</html>
